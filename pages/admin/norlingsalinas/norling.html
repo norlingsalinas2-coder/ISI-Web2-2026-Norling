@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Administración de Equipos</title>
+<link rel="stylesheet" href="teams.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Administración de Equipos</h1>
+
+<input
+id="teamName"
+placeholder="Nombre del equipo">
+
+<button onclick="guardarTeam()">
+Guardar
+</button>
+
+<input
+id="buscar"
+placeholder="Buscar equipo"
+onkeyup="buscarTeam()">
+
+<p id="mensaje"></p>
+
+<p id="contador"></p>
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Nombre</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="teamsBody"></tbody>
+
+</table>
+
+</div>
+
+<script src="teams.js"></script>
+
+</body>
+</html>
