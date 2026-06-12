@@ -1,244 +1,145 @@
-const API_URL = "https://localhost:5001/api/Teams";
+import TeamsService from "../../../shared/services/teams.service.js";
+import TeamRequest from "../../../shared/models/request/team.request.js";
 
+const API_URL = "https://localhost:7286/api/Teams";
+
+const getHeaders = (includeContentType = false) => {
+    const tokenData = JSON.parse(localStorage.getItem("token"));
+    const token = tokenData?.token;
+    const headers = { "Authorization": `Bearer ${token}` };
+    if (includeContentType) headers["Content-Type"] = "application/json";
+    return headers;
+};
 let teams = [];
 let editandoId = null;
 
-window.onload = cargarTeams;
+window.onload = function () {
+    cargarTeams();
+};
 
-async function cargarTeams(){
+async function cargarTeams() {
+    try {
+        const response = await fetch(API_URL, {
+            headers: getHeaders()
+        });
 
-    try{
-
-        const response =
-            await fetch(API_URL);
-
-        if(!response.ok){
-            throw new Error();
+        if (!response.ok) {
+            throw new Error("No se pudieron cargar los equipos");
         }
 
         teams = await response.json();
-
         mostrarTeams(teams);
 
-        document
-        .getElementById("contador")
-        .innerText =
-        `Total equipos: ${teams.length}`;
-
-    }catch{
-
-        mostrarMensaje(
-            "Error al cargar datos",
-            true
-        );
+    } catch (error) {
+        mostrarMensaje(error.message, true);
+        console.error(error);
     }
 }
 
-function mostrarTeams(lista){
+function mostrarTeams(lista) {
+    let html = "";
 
-    let html="";
-
-    lista.forEach(team=>{
-
+    lista.forEach(team => {
         html += `
         <tr>
-
-        <td>${team.id}</td>
-
-        <td>${team.name}</td>
-
-        <td>
-
-        <button onclick="
-            editarTeam(
-                ${team.id},
-                '${team.name}'
-            )">
-
-            Editar
-
-        </button>
-
-        <button onclick="
-            eliminarTeam(
-                ${team.id}
-            )">
-
-            Eliminar
-
-        </button>
-
-        </td>
-
-        </tr>
-        `;
+            <td>${team.id}</td>
+            <td>${team.name}</td>
+            <td>${team.description}</td>
+            <td>
+                <button onclick="editarTeam(${team.id}, '${team.name}', '${team.description}')">
+                    Editar
+                </button>
+                <button onclick="eliminarTeam(${team.id})">
+                    Eliminar
+                </button>
+            </td>
+        </tr>`;
     });
 
-    document
-    .getElementById("teamsBody")
-    .innerHTML = html;
+    document.getElementById("teamsBody").innerHTML = html;
 }
 
-async function guardarTeam(){
+async function guardarTeam() {
+    const nombre = document.getElementById("teamName").value.trim();
+    const descripcion = document.getElementById("teamDescription").value.trim();
 
-    const nombre =
-        document
-        .getElementById("teamName")
-        .value
-        .trim();
-
-    if(nombre.length < 3){
-
-        mostrarMensaje(
-            "Mínimo 3 caracteres",
-            true
-        );
-
+    if (nombre === "" || descripcion === "") {
+        mostrarMensaje("Debe ingresar nombre y descripción", true);
         return;
     }
 
-    try{
-
-        if(editandoId == null){
-
-            await fetch(API_URL,{
-
-                method:"POST",
-
-                headers:{
-                    "Content-Type":
-                    "application/json"
-                },
-
-                body:JSON.stringify({
-                    name:nombre
-                })
-
+    try {
+        if (editandoId === null) {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: getHeaders(true),
+                body: JSON.stringify({ name: nombre, description: descripcion })
             });
 
-            mostrarMensaje(
-                "Equipo creado"
-            );
+            if (!response.ok) throw new Error("Error al crear equipo");
+            mostrarMensaje("Equipo creado correctamente");
 
-        }else{
+        } else {
+            const response = await fetch(`${API_URL}/${editandoId}`, {
+                method: "PUT",
+                headers: getHeaders(true),
+                body: JSON.stringify({ name: nombre, description: descripcion })
+            });
 
-            await fetch(
-                `${API_URL}/${editandoId}`,
-                {
-
-                    method:"PUT",
-
-                    headers:{
-                        "Content-Type":
-                        "application/json"
-                    },
-
-                    body:JSON.stringify({
-                        name:nombre
-                    })
-                }
-            );
-
-            mostrarMensaje(
-                "Equipo actualizado"
-            );
-
+            if (!response.ok) throw new Error("Error al actualizar equipo");
+            mostrarMensaje("Equipo actualizado");
             editandoId = null;
         }
 
-        document
-        .getElementById("teamName")
-        .value = "";
-
+        document.getElementById("teamName").value = "";
+        document.getElementById("teamDescription").value = "";
         cargarTeams();
 
-    }catch{
-
-        mostrarMensaje(
-            "Error al guardar",
-            true
-        );
+    } catch (error) {
+        console.error(error);
+        mostrarMensaje(error.message, true);
     }
 }
 
-function editarTeam(id,nombre){
-
-    editandoId=id;
-
-    document
-    .getElementById("teamName")
-    .value=nombre;
+function editarTeam(id, nombre, descripcion) {
+    editandoId = id;
+    document.getElementById("teamName").value = nombre;
+    document.getElementById("teamDescription").value = descripcion;
 }
 
-async function eliminarTeam(id){
+async function eliminarTeam(id) {
+    if (!confirm("¿Desea eliminar este equipo?")) return;
 
-    if(
-        !confirm(
-            "¿Seguro que desea eliminar?"
-        )
-    ){
-        return;
-    }
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: "DELETE",
+            headers: getHeaders()
+        });
 
-    try{
-
-        await fetch(
-            `${API_URL}/${id}`,
-            {
-                method:"DELETE"
-            }
-        );
-
-        mostrarMensaje(
-            "Equipo eliminado"
-        );
-
+        if (!response.ok) throw new Error("Error al eliminar");
+        mostrarMensaje("Equipo eliminado");
         cargarTeams();
 
-    }catch{
-
-        mostrarMensaje(
-            "Error al eliminar",
-            true
-        );
+    } catch (error) {
+        console.error(error);
+        mostrarMensaje(error.message, true);
     }
 }
 
-function buscarTeam(){
-
-    const texto =
-        document
-        .getElementById("buscar")
-        .value
-        .toLowerCase();
-
-    const filtrados =
-        teams.filter(t =>
-            t.name.toLowerCase()
-            .includes(texto)
-        );
-
+function buscarTeam() {
+    const texto = document.getElementById("buscar").value.toLowerCase();
+    const filtrados = teams.filter(team => team.name.toLowerCase().includes(texto));
     mostrarTeams(filtrados);
 }
 
-function mostrarMensaje(
-    texto,
-    error=false
-){
-
-    const mensaje =
-        document.getElementById(
-            "mensaje"
-        );
-
-    mensaje.innerText = texto;
-
-    mensaje.style.color =
-        error ? "red" : "green";
-
-    setTimeout(() => {
-
-        mensaje.innerText = "";
-
-    },3000);
+function mostrarMensaje(mensaje, error = false) {
+    const elemento = document.getElementById("mensaje");
+    elemento.innerText = mensaje;
+    elemento.style.color = error ? "red" : "green";
+    setTimeout(() => { elemento.innerText = ""; }, 3000);
 }
+
+window.guardarTeam = guardarTeam;
+window.editarTeam = editarTeam;
+window.eliminarTeam = eliminarTeam;
+window.buscarTeam = buscarTeam;

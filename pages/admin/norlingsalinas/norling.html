@@ -1,51 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Administración de Equipos</title>
-<link rel="stylesheet" href="teams.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Teams - Norling Salinas</title>
+    <link rel="stylesheet" href="norling.css">
 </head>
-
 <body>
 
-<div class="container">
+    <h1>Gestión de Equipos</h1>
 
-<h1>Administración de Equipos</h1>
+    <div class="formulario">
+        <input
+            type="text"
+            id="teamName"
+            placeholder="Nombre del equipo">
 
-<input
-id="teamName"
-placeholder="Nombre del equipo">
+        <input
+            type="text"
+            id="teamDescription"
+            placeholder="Descripción del equipo">
 
-<button onclick="guardarTeam()">
-Guardar
-</button>
+        <button type="button" onclick="guardarTeam()">
+            Guardar
+        </button>
+    </div>
 
-<input
-id="buscar"
-placeholder="Buscar equipo"
-onkeyup="buscarTeam()">
+    <br>
 
-<p id="mensaje"></p>
+    <input
+        type="text"
+        id="buscar"
+        placeholder="Buscar equipo..."
+        onkeyup="buscarTeam()">
 
-<p id="contador"></p>
+    <p id="mensaje"></p>
 
-<table>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
 
-<thead>
-<tr>
-<th>ID</th>
-<th>Nombre</th>
-<th>Acciones</th>
-</tr>
-</thead>
+        <tbody id="teamsBody"></tbody>
+    </table>
 
-<tbody id="teamsBody"></tbody>
-
-</table>
-
-</div>
-
-<script src="teams.js"></script>
+    <script type="module" src="Norling.js"></script>
 
 </body>
 </html>
